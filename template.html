@@ -13,7 +13,10 @@
   --ink:#14161A; --ink2:#5F636B; --ink3:#93979F; --inkhi:#000;
   --today:#FFFDF3; --todayink:#8A6E12; --sheetline:transparent;
   --gold:#C9A227; --live:#4FBF87; --linkg:#2F6B4F;
-  --c-white:#CFCBC0; --c-green:#2E9E63; --c-black:#5C6A99; --c-purple:#8E5FC7; --c-orange:#E08234; --c-tba:#9AA0A8;
+  /* Real denominations in the order every player already knows:
+     red $5, green $25, black $100, purple $500, orange $1,000. No blue -- almost no
+     room in this region racks one. */
+  --c-red:#B3242B; --c-green:#17754A; --c-black:#23282F; --c-purple:#67399C; --c-orange:#B85D14; --c-tba:#666E76;
   --cellhov:#8C8578;
   --noise:.30;
 }
@@ -23,6 +26,8 @@ html[data-theme="dark"]{
   --ink:#E9EEE9; --ink2:#94A29A; --ink3:#61706A; --inkhi:#fff;
   --today:#1A2016; --todayink:#D6B23F; --sheetline:#22302A;
   --cellhov:#41544A;
+  /* the $100 chip is nearly the felt colour, so it gets lifted in dark mode only */
+  --c-black:#3B4551; --c-tba:#79828B;
   --linkg:#5FBF8E;
   --c-white:#C6C2B6; --c-green:#39B473; --c-black:#7A88B8; --c-purple:#A377DA; --c-orange:#EE9448;
   --noise:.20;
@@ -36,7 +41,7 @@ html[data-theme="dark"] .gcal{background:#E9EEE9;color:#0A100D}
 html[data-theme="dark"] .gcal:hover{background:#fff}
 html[data-theme="dark"] .sheet{box-shadow:0 0 0 1px var(--sheetline),0 26px 60px -22px rgba(0,0,0,.9)}
 html[data-theme="dark"] .card:hover{background:var(--paper2)}
-html[data-theme="dark"] .chip.w{box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
+html[data-theme="dark"] .chip{box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
 body{
@@ -137,20 +142,19 @@ header.top{padding:26px 0 18px}
 .chip{display:inline-flex;align-items:center;justify-content:center;vertical-align:-4px;
   width:22px;height:22px;border-radius:50%;flex:none;position:relative;background:var(--c);
   font-family:"Martian",monospace;font-size:8px;font-weight:700;letter-spacing:-.02em;
-  color:rgba(0,0,0,.82);line-height:1;text-shadow:0 .5px 0 rgba(255,255,255,.22)}
-.chip.dark{color:#fff;text-shadow:0 .5px 1px rgba(0,0,0,.45)}
+  color:rgba(255,255,255,.96);line-height:1;text-shadow:0 .5px 1px rgba(0,0,0,.45)}
 .chip::after{content:"";position:absolute;inset:1.8px;border-radius:50%;
   border:1.4px dashed rgba(255,255,255,.5);pointer-events:none}
-.chip.dark::after{border-color:rgba(255,255,255,.42)}
+
 /* provisional data reads as provisional in the grid, not only in the drawer */
 .chip.unsure{box-shadow:0 0 0 1px var(--paper),0 0 0 2.5px var(--c)}
 .chip.unsure::before{content:"";position:absolute;inset:-4.5px;border-radius:50%;
   border:1.2px dotted var(--c);opacity:.9}
 .chip.sm{width:20px;height:20px;font-size:7.5px}
 .chip.sm::after{inset:1.6px;border-width:1.3px}
-.chip.w{box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}
+.chip{box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)}
 .chip.w.unsure{box-shadow:inset 0 0 0 1px rgba(0,0,0,.22),0 0 0 1px var(--paper),0 0 0 2.5px var(--c)}
-.chip.w::after{border-color:rgba(0,0,0,.32)}
+
 
 /* ================= card stock ================= */
 /* Playing cards are embossed with a linen finish: a fine 45-degree cross-hatch that
@@ -202,10 +206,19 @@ select:focus,input:focus{border-color:var(--ink3)}
 .mbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;
   padding:13px 26px;background:var(--paper);border-bottom:1px solid var(--rule)}
 .mbar h2{font-size:20px}
-.mkey{display:none}
+/* the buy-in key lives in the sticky bar so it never scrolls away, either breakpoint */
+.mkey{display:flex;align-items:center;gap:14px;margin-left:auto;flex-wrap:wrap}
+.mkey .lbl{font-family:"Martian",monospace;font-size:8px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3)}
+.mkey .rk{gap:6px;font-size:8.5px;color:var(--ink2)}
+.mkey .chip{width:17px;height:17px;font-size:0}
+.mkey .rk b{font-weight:400}
+.mkey .sm{display:none}
+@media(max-width:1180px){.mkey .lg{display:none}.mkey .sm{display:inline}.mkey{gap:11px}}
 .mbar h2{font-family:"Bricolage",sans-serif;font-size:20px;font-weight:600;letter-spacing:-.035em;white-space:nowrap}
 .mbar h2 em{font-style:normal;color:var(--ink3)}
 .nav{display:flex;gap:5px;margin-left:4px}
+.mbar #tomonth{flex:none}
 .nav button{width:27px;height:27px;border:1px solid var(--rule);border-radius:4px;color:var(--ink2);display:grid;place-items:center;font-size:14px}
 .nav button:hover:not(:disabled){border-color:var(--ink);color:var(--ink)}
 .nav button:disabled{opacity:.3;cursor:default}
@@ -214,8 +227,25 @@ select:focus,input:focus{border-color:var(--ink3)}
 .grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-left:1px solid var(--rule2);border-top:1px solid var(--rule2)}
 .cell{
   min-width:0;overflow:hidden;border-right:1px solid var(--rule2);border-bottom:1px solid var(--rule2);
-  min-height:128px;padding:8px 8px 10px;background:var(--paper);
+  min-height:150px;padding:11px 11px 13px;background:var(--paper);position:relative;
 }
+/* tour runs: a hairline along the top edge for every day the stop is live, named once
+   where it starts. Quiet enough to ignore, present enough to trace across a month. */
+/* Drawn from the page's own accents instead of invented: the gold already used for
+   today and guarantees, the felt green, and ink. Nothing competes with the six chip
+   colours -- the chips are the encoding, these are trim. */
+.t-wsop{--tc:#C9A227} .t-mspt{--tc:#2F6B4F} .t-rg{--tc:#3A4048}
+html[data-theme="dark"] .t-wsop{--tc:#D9B43C}
+html[data-theme="dark"] .t-mspt{--tc:#4FBF87}
+html[data-theme="dark"] .t-rg{--tc:#98A3AB}
+.rail{position:absolute;left:0;right:0;top:calc(var(--i) * 3px);height:2px;
+  background:var(--tc);z-index:2}
+.cell.railed{padding-top:calc(11px + var(--rn) * 3px)}
+.tlab{display:block;font-family:"Martian",monospace;font-size:7px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--tc);
+  margin:-2px 0 6px;line-height:1.45;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cell.past .rail{opacity:.4} .cell.past .tlab{opacity:.5}
 .cell.out{background:var(--paper2)}
 .cell.today{background:var(--today);box-shadow:inset 0 0 0 1.5px var(--gold)}
 /* the whole box opens the day poster; individual events still open their own drawer */
@@ -231,16 +261,20 @@ select:focus,input:focus{border-color:var(--ink3)}
 .cell.past:hover .ev,.cell.past:hover .more,.cell.past:hover .mdots{opacity:.8}
 .cell.past .ev{transition:opacity .12s}
 .cell.today.hasev:hover .dnum{color:var(--todayink)}
-.dnum{font-family:"Martian",monospace;font-size:9.5px;color:var(--ink3);margin-bottom:7px;display:block;
+.dnum{font-family:"Martian",monospace;font-size:9.5px;color:var(--ink3);margin-bottom:9px;display:block;
   text-align:left;padding:1px 4px;margin-left:-4px;border-radius:4px;cursor:pointer;background:none;border:none}
 .dnum:hover{background:var(--paper2);color:var(--ink)}
 .cell.today .dnum{color:var(--todayink)}
-.ev{display:flex;align-items:center;gap:7px;padding:3.5px 0;border-top:1px solid var(--rule2);width:100%;text-align:left}
+.ev{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--rule2);width:100%;text-align:left}
 .ev:first-of-type{border-top:none}
 .ev:hover .evn{color:var(--inkhi);text-decoration:underline;text-underline-offset:2px}
 .evn{flex:1;min-width:0;font-size:10.5px;font-weight:500;letter-spacing:-.012em;color:var(--ink);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.evb{font-family:"Martian",monospace;font-size:8.5px;color:var(--ink2);flex:none}
+.evb{font-family:"Martian",monospace;font-size:9px;color:var(--ink);flex:none;
+  min-width:38px;text-align:right;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.evb.tba{color:var(--ink3)}
+.ev.key .evb{font-weight:700}
+.cell.past .evb{color:var(--ink2)}
 .ev.key .evn{font-weight:700}
 .more{font-family:"Martian",monospace;font-size:8px;color:var(--ink3);padding-top:5px;letter-spacing:.06em}
 .more:hover{color:var(--ink)}
@@ -410,12 +444,21 @@ footer{padding:30px 0 10px;color:var(--feltink2);font-size:12px;line-height:1.65
   .themebtn{position:absolute;top:0;right:0;margin:0;width:34px;height:34px}
   .hrow{padding-right:44px}
   /* the key rides along in the sticky month bar so the chip colours stay decodable */
+  /* key drops to its own full-width row; Today has to stay on line one or the sticky
+     bar grows a third row and eats a sixth of the screen */
   .mbar{flex-wrap:wrap;row-gap:0;padding-bottom:0}
-  .mkey{display:flex;width:100%;align-items:center;justify-content:space-between;gap:3px;
-    margin-top:10px;padding:8px 0 9px;border-top:1px solid var(--rule2)}
+  .mbar #tomonth{order:2;margin-left:auto}
+  .mkey{order:3;width:100%;justify-content:space-between;gap:3px;margin:10px 0 0;
+    padding:8px 0 9px;border-top:1px solid var(--rule2);flex-wrap:nowrap}
+  .mkey .lbl{display:none}
   .mkey .rk{gap:4px;font-size:7.5px;letter-spacing:.04em;color:var(--ink3)}
   .mkey .chip{width:15px;height:15px;vertical-align:0}
-  .grid.mini .cell{min-height:52px;padding:5px 4px;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .grid.mini .cell{min-height:56px;padding:5px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .grid.mini .rail{top:0;bottom:0;right:auto;left:calc(var(--i) * 3px);width:3px;height:auto}
+  .grid.mini .cell.railed{padding-top:5px}
+  .grid.mini .tlab{display:none}
+  .grid.mini .mdots .chip{width:18px;height:18px;font-size:7px}
+  .grid.mini .mdots{max-width:40px;gap:2px}
   .grid.mini .dnum{margin:0;font-size:11px}
   .grid.mini .ev{display:none}
   .grid.mini .more{display:none}
@@ -424,8 +467,10 @@ footer{padding:30px 0 10px;color:var(--feltink2);font-size:12px;line-height:1.65
   .legend{font-size:11.5px}
 }
 @media(max-width:900px){
-  .cell{min-height:66px;padding:5px 6px 7px}
-  .evb{display:none}
+  .cell{min-height:78px;padding:7px 8px 9px}
+  .cell.railed{padding-top:calc(7px + var(--rn) * 3px)}
+  .tlab{font-size:6.5px;letter-spacing:.06em}
+  .evb{font-size:8.5px;min-width:32px}
   .evn{font-size:10px}
   .row{grid-template-columns:1fr;gap:8px}
   .rd{position:static;display:flex;align-items:baseline;gap:9px}
@@ -465,10 +510,6 @@ footer{padding:30px 0 10px;color:var(--feltink2);font-size:12px;line-height:1.65
       <button data-v="sources">Sources</button>
     </div>
   </div>
-  <div class="rack">
-    <div class="rackin" id="rack"></div>
-
-  </div>
   <div id="homerow"></div>
 </header>
 
@@ -495,8 +536,8 @@ footer{padding:30px 0 10px;color:var(--feltink2);font-size:12px;line-height:1.65
     <div class="mbar">
       <h2 id="mtitle"></h2>
       <div class="nav"><button id="prev" aria-label="Previous month">&#8249;</button><button id="next" aria-label="Next month">&#8250;</button></div>
-      <button class="btn alt" id="tomonth" style="margin-left:auto">Today</button>
       <div class="mkey" id="mkey"></div>
+      <button class="btn alt" id="tomonth">Today</button>
     </div>
     <div class="pad">
       <div class="dow"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
@@ -673,14 +714,14 @@ const esc=s=>String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const daysTo=d=>Math.round((parse(d)-T0)/864e5);
 
 /* chip denomination bands */
-const BANDS=[[150,"var(--c-white)","w","Under $150","<150"],[300,"var(--c-green)","","$150 – $300","150"],
+const BANDS=[[150,"var(--c-red)","","Under $150","<150"],[300,"var(--c-green)","","$150 – $300","150"],
   [600,"var(--c-black)","","$300 – $600","300"],[1200,"var(--c-purple)","","$600 – $1,200","600"],
   [1/0,"var(--c-orange)","","$1,200 +","1.2K"]];
 function band(b){ if(b==null) return ["var(--c-tba)","","Not published"];
   for(const [max,c,cls,lab] of BANDS) if(b<max) return [c,cls,lab];
   return ["var(--c-tba)","",""]; }
 /* Colour is the buy-in band, text is the market. Dotted ring = not yet confirmed. */
-const DARKBAND=new Set(["var(--c-black)","var(--c-purple)"]);
+const DARKBAND=new Set();   /* every denomination is dark enough for white type now */
 const vcode=v=>(v&&(v.code||(v.city||"").replace(/[^A-Za-z]/g,"").slice(0,3).toUpperCase()))||"KC";
 function chipEl(b,sm,v,conf){
   const [c,cls]=band(b);
@@ -707,7 +748,11 @@ function build(){
       d.setDate(d.getDate()+7);
     }
   });
-  out.forEach(e=>{e._v=V[e.venue];e._t=e._v?e._v.tier:"ring"});
+  /* Satellites are how you get into an event, not an event you plan a day around. A big
+     tour stop runs three or four a day and they were crowding the real ones out of the
+     grid. Kept out of the month cells, kept in the day poster and everywhere else. */
+  out.forEach(e=>{e._v=V[e.venue];e._t=e._v?e._v.tier:"ring";
+    e._sat=/\bsatellite\b/i.test(e.name||"")});
   out.sort((a,b)=>a.date===b.date?(a.time||"99").localeCompare(b.time||"99"):a.date.localeCompare(b.date));
   return out;
 }
@@ -861,15 +906,62 @@ function renderHome(edit){
 renderHome(false);
 /* Compact buy-in key, mobile only. On a phone the month cells are chips and nothing
    else, so the colour is the whole message and it has to stay on screen while scrolling. */
-document.getElementById("mkey").innerHTML=
-  BANDS.map(([m,c,cls,lab,sh])=>'<span class="rk"><span class="chip '+cls+(DARKBAND.has(c)?" dark":"")+
-    '" style="--c:'+c+'"></span>'+sh+'</span>').join("")+
-  '<span class="rk"><span class="chip" style="--c:var(--c-tba)"></span>TBA</span>';
-document.getElementById("rack").innerHTML='<span class="lbl">Buy-in</span>'+
-  BANDS.map(([m,c,cls,lab])=>'<span class="rk"><span class="chip '+cls+(DARKBAND.has(c)?" dark":"")+'" style="--c:'+c+'"></span>'+lab+'</span>').join("");
+const rkEl=(c,cls,lab,sh)=>'<span class="rk"><span class="chip '+cls+(DARKBAND.has(c)?" dark":"")+
+  '" style="--c:'+c+'"></span><b class="lg">'+lab+'</b><b class="sm">'+sh+'</b></span>';
+document.getElementById("mkey").innerHTML='<span class="lbl">Buy-in</span>'+
+  BANDS.map(([m,c,cls,lab,sh])=>rkEl(c,cls,lab,sh)).join("")+
+  rkEl("var(--c-tba)","","Not published","TBA");
 
 /* ---------- month ---------- */
-function shortName(n){return n.replace(/^Event #\d+[A-D]?: /,"").replace(/^#\d+[A-D]? /,"")
+/* A band marks a tour stop running that day. Cash Cows is deliberately absent: it runs
+   92 of the 124 event days, so banding it would paint nearly the whole grid and the
+   band would stop meaning anything. Priority is rarity, not preference. */
+const TOURS=[["WSOP Circuit","WSOP Circuit","wsop"],
+             ["MSPT","MSPT","mspt"],
+             ["RunGood","RunGood","rg"]];
+/* A run is a tour AT A ROOM, not just a tour. WSOP Circuit Tulsa and WSOP Circuit
+   Council Bluffs are different trips and have to read as different things. Overlaps are
+   normal -- MSPT St. Charles and a WSOPC stop shared five days in September -- so every
+   active run gets its own hairline instead of one winning and the rest vanishing. */
+const MARKET={KC:"Kansas City",TOP:"Topeka",JOP:"Joplin",CB:"Council Bluffs",DSM:"Des Moines",
+  WIC:"Wichita",STL:"St. Louis",TUL:"Tulsa",OK:"Oklahoma",IA:"Iowa",MN:"Running Aces",
+  MS:"Tunica",CHI:"Chicago"};
+function runsOf(list){
+  const out=[];
+  for(const [name,lab,slug] of TOURS){
+    const evs=list.filter(e=>e.series===name); if(!evs.length) continue;
+    /* Market, not municipality. Hard Rock is legally in Catoosa and Downstream is in
+       Quapaw; nobody says either out loud. The chip code already carries the market. */
+    const city=[...new Set(evs.map(e=>e._v&&(MARKET[e._v.code]||e._v.city)).filter(Boolean))].join(" / ");
+    out.push({slug,key:name+"|"+city,text:lab+(city?" \u00b7 "+city:"")});
+  }
+  return out;
+}
+/* Only the figure at the front comes out, including after a short prefix like
+   "Satellite:". A price further in stays -- in "Satellite: $120 NLH -> $1,110 seat"
+   the second number is what the event is for. */
+const stripPrice=n=>n.replace(/^([A-Za-z][\w ]{0,14}:\s*)?\$[\d,]+\s+/,"$1")||n;
+/* No-limit hold'em is the default; the exceptions say PLO, Big O, 2-7 and say it loudly.
+   The trailing \s+ is what protects "NLH/PLO" and a bare "NLH" from being emptied out. */
+const stripNLH=n=>n.replace(/^([A-Za-z][\w ]{0,14}:\s*)?NLH\s+/,"$1")||n;
+/* A series placeholder repeats its market in the title -- "RunGood - Joplin",
+   "WSOP Circuit Council Bluffs". The chip and the rail already say where it is, and the
+   repeat is what pushes the name into an ellipsis, so it comes off in the grid only. */
+const esc_re=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+function trimVenueTail(n,v){
+  if(!v) return n;
+  for(const t of [MARKET[v.code],v.city]){
+    if(!t) continue;
+    const m=n.replace(new RegExp("\\s*(?:\u2014|-)?\\s*"+esc_re(t)+"$"),"");
+    if(m && m!==n) return m.replace(/[\s\u2014-]+$/,"");
+  }
+  return n;
+}
+const cellName=e=>stripNLH(stripPrice(trimVenueTail(shortName(e.name),e._v)));
+/* RGPS is RunGood's own initialism and means nothing to anyone else. Renamed at the
+   source in build_data.py; this second pass covers a feed that still carries the old text. */
+function shortName(n){return n.replace(/\bRGPS\b/g,"RunGood")
+  .replace(/^Event #\d+[A-D]?: /,"").replace(/^#\d+[A-D]? /,"")
   .replace(/ — Flight /," Flt ").replace(/ — Day 2/," D2").replace(/ — 12-day ring series/,"")}
 function renderMonth(){
   const y=S.cur.getFullYear(),m=S.cur.getMonth();
@@ -887,34 +979,58 @@ function renderMonth(){
   while(cells.length%7)cells.push({d:new Date(y,m+1,cells.length-dow0-dim+1),out:true});
   const g=document.getElementById("grid");g.innerHTML="";
   const mini=MOBILE.matches; g.className="grid"+(mini?" mini":"");
-  cells.forEach(c=>{
+  const CAP=3;   /* was 4. The day poster carries the overflow now, so the grid can breathe. */
+  let prevRuns=new Set();
+  cells.forEach((c,i)=>{
     const k=iso(c.d);
     const list=(by[k]||[]).slice().sort((a,b)=>(key(b)?1:0)-(key(a)?1:0)||(a.time||"07:00").localeCompare(b.time||"07:00"));
     const el=document.createElement("div");
-    el.className="cell"+(c.out?" out":"")+(k===TISO?" today":"")+(k<TISO?" past":"");
+    const runs=runsOf(list);
+    el.className="cell"+(c.out?" out":"")+(k===TISO?" today":"")+(k<TISO?" past":"")+(runs.length?" railed":"");
+    if(runs.length) el.style.setProperty("--rn",runs.length);
+    runs.forEach((r,ti)=>{
+      const rl=document.createElement("span");
+      rl.className="rail t-"+r.slug; rl.style.setProperty("--i",ti);
+      rl.title=r.text; el.appendChild(rl);
+    });
     const dn=document.createElement("button");
     dn.className="dnum"; dn.textContent=String(c.d.getDate()).padStart(2,"0");
     dn.title=list.length?list.length+" event"+(list.length===1?"":"s")+" — open the day":"No events";
     dn.onclick=ev=>{ev.stopPropagation();openPoster(k)};
     el.appendChild(dn);
-    list.slice(0,4).forEach(e=>{
+    /* Name a run where it starts and again at the top of each week row. A twelve-day
+       stop should read as one trip, not twelve repeated labels. */
+    runs.forEach(r=>{
+      if(i%7!==0 && prevRuns.has(r.key)) return;
+      const lb=document.createElement("span");
+      lb.className="tlab t-"+r.slug; lb.textContent=r.text; lb.title=r.text;
+      el.appendChild(lb);
+    });
+    prevRuns=new Set(runs.map(r=>r.key));
+    const main=list.filter(e=>!e._sat);
+    main.slice(0,CAP).forEach(e=>{
       const b=document.createElement("button");
       b.className="ev"+(key(e)?" key":"");
-      // every label now carries its own price, so the right column would just repeat it
-      const label=(!nameHasPrice(e)&&e.buyin)? money(e.buyin)+" "+shortName(e.name) : shortName(e.name);
-      const tail=e.buyin==null?"TBA":(e.buyin?"":"inv");
-      b.title=label+"  ·  "+v0(e)+(e.time?"  ·  "+f12(e.time):"");
+      /* Buy-in moves to its own right-hand column so the numbers stack and you can
+         read the price of a whole week down one edge. Most source names already lead
+         with the figure, so strip it or it prints twice. */
+      const label=cellName(e);
+      const cost=e.buyin==null?"TBA":(e.buyin?money(e.buyin):"INV");
+      b.title=shortName(e.name)+"  ·  "+v0(e)+(e.time?"  ·  "+f12(e.time):"");
       b.innerHTML=chipEl(e.buyin,true,e._v,e.recurring?'certain':e.conf)+'<span class="evn">'+esc(label)+'</span>'+
-        (tail?'<span class="evb">'+tail+'</span>':'');
+        '<span class="evb'+(e.buyin==null?" tba":"")+'">'+esc(cost)+'</span>';
       b.onclick=ev=>{ev.stopPropagation();open_(e)}; el.appendChild(b);
     });
-    if(list.length>4){
-      const mb=document.createElement("button");mb.className="more";mb.textContent="+"+(list.length-4)+" more";
+    /* the count still covers everything on the day, satellites included, so nothing
+       disappears without saying so */
+    const seen=Math.min(main.length,CAP);
+    if(list.length>seen){
+      const mb=document.createElement("button");mb.className="more";mb.textContent="+"+(list.length-seen)+" more";
       mb.onclick=ev=>{ev.stopPropagation();openPoster(k)};el.appendChild(mb);
     }
     if(mini&&list.length){
       const dots=document.createElement("span");dots.className="mdots";
-      dots.innerHTML=list.slice(0,6).map(e=>chipEl(e.buyin,true,e._v,e.recurring?'certain':e.conf)).join("");
+      dots.innerHTML=(main.length?main:list).slice(0,6).map(e=>chipEl(e.buyin,true,e._v,e.recurring?'certain':e.conf)).join("");
       el.appendChild(dots);
     }
     if(list.length){
