@@ -14,7 +14,7 @@ const CACHE_SECONDS = 60 * 60 * 24 * 7;
  * GET /api/matrix  — self-test. Reports which half of the setup is broken without
  * ever echoing the key. Safe to leave deployed: it exposes no secret material.
  */
-export async function onRequestGet({ env }) {
+export async function matrixGet(env) {
   const key = env.GOOGLE_MAPS_KEY;
   const out = {
     keyPresent: !!key,
@@ -24,7 +24,7 @@ export async function onRequestGet({ env }) {
     verdict: "",
   };
   if (!key) {
-    out.verdict = "GOOGLE_MAPS_KEY is not bound to this deployment. Add it in Pages > Settings > Variables and secrets, then create a NEW deployment. Env vars only attach to deployments made after they are set.";
+    out.verdict = "GOOGLE_MAPS_KEY is not bound to this deployment. Add it as a secret (Worker > Settings > Variables and Secrets, or `wrangler secret put GOOGLE_MAPS_KEY`) and redeploy. Secrets only attach to deployments made after they are set.";
     return json(out);
   }
   // 1. Geocoding API
@@ -60,7 +60,7 @@ export async function onRequestGet({ env }) {
   return json(out);
 }
 
-export async function onRequestPost({ request, env }) {
+export async function matrixPost(request, env) {
   const key = env.GOOGLE_MAPS_KEY;
   if (!key) return json({ error: "GOOGLE_MAPS_KEY is not set on this project" }, 501);
 

@@ -8,7 +8,7 @@
  */
 import DATA from "../../data/poker.json";
 
-export async function onRequestGet({ request }) {
+export async function calendarGet(request) {
   const q = new URL(request.url).searchParams;
   const tiers = new Set((q.get("tier") || "kc,ring").split(",").filter(Boolean));
   const min = parseInt(q.get("min") || "0", 10) || 0;
