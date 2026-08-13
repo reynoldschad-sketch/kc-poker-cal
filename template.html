@@ -14,6 +14,7 @@
   --today:#FFFDF3; --todayink:#8A6E12; --sheetline:transparent;
   --gold:#C9A227; --live:#4FBF87; --linkg:#2F6B4F;
   --c-white:#CFCBC0; --c-green:#2E9E63; --c-black:#5C6A99; --c-purple:#8E5FC7; --c-orange:#E08234; --c-tba:#9AA0A8;
+  --cellhov:#8C8578;
   --noise:.30;
 }
 html[data-theme="dark"]{
@@ -21,6 +22,7 @@ html[data-theme="dark"]{
   --paper:#111815; --paper2:#0C1310; --rule:#26332C; --rule2:#1C2721; --field:#0A100D;
   --ink:#E9EEE9; --ink2:#94A29A; --ink3:#61706A; --inkhi:#fff;
   --today:#1A2016; --todayink:#D6B23F; --sheetline:#22302A;
+  --cellhov:#41544A;
   --linkg:#5FBF8E;
   --c-white:#C6C2B6; --c-green:#39B473; --c-black:#7A88B8; --c-purple:#A377DA; --c-orange:#EE9448;
   --noise:.20;
@@ -200,6 +202,7 @@ select:focus,input:focus{border-color:var(--ink3)}
 .mbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;
   padding:13px 26px;background:var(--paper);border-bottom:1px solid var(--rule)}
 .mbar h2{font-size:20px}
+.mkey{display:none}
 .mbar h2{font-family:"Bricolage",sans-serif;font-size:20px;font-weight:600;letter-spacing:-.035em;white-space:nowrap}
 .mbar h2 em{font-style:normal;color:var(--ink3)}
 .nav{display:flex;gap:5px;margin-left:4px}
@@ -215,6 +218,19 @@ select:focus,input:focus{border-color:var(--ink3)}
 }
 .cell.out{background:var(--paper2)}
 .cell.today{background:var(--today);box-shadow:inset 0 0 0 1.5px var(--gold)}
+/* the whole box opens the day poster; individual events still open their own drawer */
+.cell.hasev{cursor:pointer}
+.cell.hasev:hover{box-shadow:inset 0 0 0 1px var(--cellhov)}
+.cell.today.hasev:hover{box-shadow:inset 0 0 0 1.5px var(--gold),inset 0 0 0 3px var(--today)}
+.cell.hasev:hover .dnum{background:var(--paper2);color:var(--ink)}
+/* days already behind us: dimmed, not hidden. Hover restores them. */
+.cell.past .dnum{opacity:.5}
+.cell.past .ev,.cell.past .more,.cell.past .mdots{opacity:.4}
+.cell.past .chip{filter:grayscale(.85)}
+.cell.past:hover .dnum{opacity:.85}
+.cell.past:hover .ev,.cell.past:hover .more,.cell.past:hover .mdots{opacity:.8}
+.cell.past .ev{transition:opacity .12s}
+.cell.today.hasev:hover .dnum{color:var(--todayink)}
 .dnum{font-family:"Martian",monospace;font-size:9.5px;color:var(--ink3);margin-bottom:7px;display:block;
   text-align:left;padding:1px 4px;margin-left:-4px;border-radius:4px;cursor:pointer;background:none;border:none}
 .dnum:hover{background:var(--paper2);color:var(--ink)}
@@ -393,6 +409,12 @@ footer{padding:30px 0 10px;color:var(--feltink2);font-size:12px;line-height:1.65
   body{padding-bottom:74px}
   .themebtn{position:absolute;top:0;right:0;margin:0;width:34px;height:34px}
   .hrow{padding-right:44px}
+  /* the key rides along in the sticky month bar so the chip colours stay decodable */
+  .mbar{flex-wrap:wrap;row-gap:0;padding-bottom:0}
+  .mkey{display:flex;width:100%;align-items:center;justify-content:space-between;gap:3px;
+    margin-top:10px;padding:8px 0 9px;border-top:1px solid var(--rule2)}
+  .mkey .rk{gap:4px;font-size:7.5px;letter-spacing:.04em;color:var(--ink3)}
+  .mkey .chip{width:15px;height:15px;vertical-align:0}
   .grid.mini .cell{min-height:52px;padding:5px 4px;display:flex;flex-direction:column;align-items:center;gap:5px}
   .grid.mini .dnum{margin:0;font-size:11px}
   .grid.mini .ev{display:none}
@@ -474,6 +496,7 @@ footer{padding:30px 0 10px;color:var(--feltink2);font-size:12px;line-height:1.65
       <h2 id="mtitle"></h2>
       <div class="nav"><button id="prev" aria-label="Previous month">&#8249;</button><button id="next" aria-label="Next month">&#8250;</button></div>
       <button class="btn alt" id="tomonth" style="margin-left:auto">Today</button>
+      <div class="mkey" id="mkey"></div>
     </div>
     <div class="pad">
       <div class="dow"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>
@@ -650,9 +673,9 @@ const esc=s=>String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const daysTo=d=>Math.round((parse(d)-T0)/864e5);
 
 /* chip denomination bands */
-const BANDS=[[150,"var(--c-white)","w","Under $150"],[300,"var(--c-green)","","$150 – $300"],
-  [600,"var(--c-black)","","$300 – $600"],[1200,"var(--c-purple)","","$600 – $1,200"],
-  [1/0,"var(--c-orange)","","$1,200 +"]];
+const BANDS=[[150,"var(--c-white)","w","Under $150","<150"],[300,"var(--c-green)","","$150 – $300","150"],
+  [600,"var(--c-black)","","$300 – $600","300"],[1200,"var(--c-purple)","","$600 – $1,200","600"],
+  [1/0,"var(--c-orange)","","$1,200 +","1.2K"]];
 function band(b){ if(b==null) return ["var(--c-tba)","","Not published"];
   for(const [max,c,cls,lab] of BANDS) if(b<max) return [c,cls,lab];
   return ["var(--c-tba)","",""]; }
@@ -836,6 +859,12 @@ function renderHome(edit){
   }
 }
 renderHome(false);
+/* Compact buy-in key, mobile only. On a phone the month cells are chips and nothing
+   else, so the colour is the whole message and it has to stay on screen while scrolling. */
+document.getElementById("mkey").innerHTML=
+  BANDS.map(([m,c,cls,lab,sh])=>'<span class="rk"><span class="chip '+cls+(DARKBAND.has(c)?" dark":"")+
+    '" style="--c:'+c+'"></span>'+sh+'</span>').join("")+
+  '<span class="rk"><span class="chip" style="--c:var(--c-tba)"></span>TBA</span>';
 document.getElementById("rack").innerHTML='<span class="lbl">Buy-in</span>'+
   BANDS.map(([m,c,cls,lab])=>'<span class="rk"><span class="chip '+cls+(DARKBAND.has(c)?" dark":"")+'" style="--c:'+c+'"></span>'+lab+'</span>').join("");
 
@@ -862,7 +891,7 @@ function renderMonth(){
     const k=iso(c.d);
     const list=(by[k]||[]).slice().sort((a,b)=>(key(b)?1:0)-(key(a)?1:0)||(a.time||"07:00").localeCompare(b.time||"07:00"));
     const el=document.createElement("div");
-    el.className="cell"+(c.out?" out":"")+(k===TISO?" today":"");
+    el.className="cell"+(c.out?" out":"")+(k===TISO?" today":"")+(k<TISO?" past":"");
     const dn=document.createElement("button");
     dn.className="dnum"; dn.textContent=String(c.d.getDate()).padStart(2,"0");
     dn.title=list.length?list.length+" event"+(list.length===1?"":"s")+" — open the day":"No events";
@@ -877,7 +906,7 @@ function renderMonth(){
       b.title=label+"  ·  "+v0(e)+(e.time?"  ·  "+f12(e.time):"");
       b.innerHTML=chipEl(e.buyin,true,e._v,e.recurring?'certain':e.conf)+'<span class="evn">'+esc(label)+'</span>'+
         (tail?'<span class="evb">'+tail+'</span>':'');
-      b.onclick=()=>open_(e); el.appendChild(b);
+      b.onclick=ev=>{ev.stopPropagation();open_(e)}; el.appendChild(b);
     });
     if(list.length>4){
       const mb=document.createElement("button");mb.className="more";mb.textContent="+"+(list.length-4)+" more";
@@ -886,8 +915,13 @@ function renderMonth(){
     if(mini&&list.length){
       const dots=document.createElement("span");dots.className="mdots";
       dots.innerHTML=list.slice(0,6).map(e=>chipEl(e.buyin,true,e._v,e.recurring?'certain':e.conf)).join("");
-      el.appendChild(dots); el.classList.add("hasev");
-      el.onclick=()=>openPoster(k);
+      el.appendChild(dots);
+    }
+    if(list.length){
+      el.classList.add("hasev");
+      el.title="Open "+MOS[c.d.getMonth()]+" "+c.d.getDate();
+      /* Don't hijack a click that was really the end of a text selection. */
+      el.onclick=()=>{ if(!String(window.getSelection()||"").trim()) openPoster(k) };
     }
     g.appendChild(el);
   });
