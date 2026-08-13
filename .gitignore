@@ -1,0 +1,7 @@
+node_modules/
+.wrangler/
+.dev.vars
+# Cloudflare regenerates these on every deploy
+public/index.html
+public/calendar.ics
+dist/
